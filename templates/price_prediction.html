@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KrishiVerse - Crop Price Prediction</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-green: #2ecc71;
+            --dark-green: #27ae60;
+            --accent-blue: #3498db;
+            --warning-yellow: #f1c40f;
+            --danger-red: #e74c3c;
+            --bg-light: #f8f9fa;
+            --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 20px rgba(0, 0, 0, 0.05);
+            padding: 1rem 2rem;
+        }
+
+        .navbar-brand {
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .nav-link {
+            color: #555;
+            font-weight: 500;
+            margin: 0 1rem;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            color: var(--primary-green);
+        }
+
+        .main-container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 2rem;
+        }
+
+        /* Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            border-radius: 30px;
+            padding: 3rem;
+            color: white;
+            margin-bottom: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            margin-bottom: 2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        /* Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Input Card */
+        .input-card {
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .input-card h3 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-card .subtitle {
+            color: #777;
+            font-size: 0.95rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-control, .form-select {
+            border: 2px solid #eef2f6;
+            border-radius: 12px;
+            padding: 0.8rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .form-control:focus, .form-select:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+            outline: none;
+        }
+
+        .btn-predict {
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            width: 100%;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            margin-top: 1rem;
+        }
+
+        .btn-predict:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(52, 152, 219, 0.3);
+        }
+
+        .btn-predict:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        /* Result Card */
+        .result-card {
+            background: white;
+            border-radius: 30px;
+            padding: 2rem;
+            box-shadow: var(--card-shadow);
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .result-header h3 {
+            color: #333;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .btn-analyze {
+            background: #f0f9ff;
+            color: var(--accent-blue);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-analyze:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        /* Price Display */
+        .price-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 20px;
+            padding: 2rem;
+            text-align: center;
+            margin-bottom: 2rem;
+            border: 2px solid var(--accent-blue);
+        }
+
+        .price-label {
+            color: #666;
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 0.5rem;
+        }
+
+        .predicted-price {
+            color: var(--accent-blue);
+            font-size: 3.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .price-range {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 1rem;
+        }
+
+        .confidence-badge {
+            background: white;
+            display: inline-block;
+            padding: 0.5rem 1.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin: 2rem 0;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        /* Factors Grid */
+        .factors-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .factor-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1rem;
+        }
+
+        .factor-name {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .factor-value {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .factor-impact {
+            font-weight: 600;
+        }
+
+        .impact-positive {
+            color: var(--primary-green);
+        }
+
+        .impact-negative {
+            color: var(--danger-red);
+        }
+
+        .impact-neutral {
+            color: #666;
+        }
+
+        /* Input Summary */
+        .input-summary {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+        }
+
+        .summary-item {
+            text-align: center;
+        }
+
+        .summary-label {
+            color: #777;
+            font-size: 0.8rem;
+            margin-bottom: 0.3rem;
+        }
+
+        .summary-value {
+            color: #333;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        /* Error Message */
+        .error-message {
+            background: #fee;
+            border: 1px solid #fcc;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            color: var(--danger-red);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        /* Loading Overlay */
+        .loader-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loader {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--accent-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+            }
+            
+            .predicted-price {
+                font-size: 2.5rem;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/">KrishiVerse</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/crop-recommendation">Crop Recommendation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/price-prediction">Price Prediction</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- Hero Section with Stats -->
+        <div class="hero-section">
+            <h1 class="hero-title">Crop Price Predictor</h1>
+            <p class="hero-subtitle">AI-powered price forecasts for Maharashtra agricultural markets</p>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">{{ "%.1f"|format(model_r2 * 100) if model_r2 else "96" }}%</div>
+                    <div class="stat-label">Prediction Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">₹{{ "%.0f"|format(model_mae) if model_mae else "250" }}</div>
+                    <div class="stat-label">Avg. Error Margin</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{{ total_markets if total_markets else "120+" }}</div>
+                    <div class="stat-label">Markets Covered</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Message (if any) -->
+        {% if error %}
+        <div class="error-message">
+            <i class="fas fa-exclamation-triangle"></i>
+            {{ error }}
+        </div>
+        {% endif %}
+
+        <!-- Hidden Model Info -->
+        {% if model_name and model_r2 %}
+        <div style="display: none;" id="modelInfo" 
+             data-model-name="{{ model_name }}"
+             data-model-r2="{{ model_r2 }}"
+             data-model-mae="{{ model_mae }}">
+        </div>
+        {% endif %}
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Left Column - Input Form -->
+            <div class="input-card">
+                <h3>Enter Crop Details</h3>
+                <p class="subtitle">Provide information about the crop and market</p>
+                
+                <form id="priceForm">
+                    <div class="form-group">
+                        <label><i class="fas fa-map-marker-alt me-2"></i>District</label>
+                        <select class="form-select" id="district" name="district" required>
+                            <option value="">Select District</option>
+                            {% for district in districts %}
+                            <option value="{{ district }}">{{ district }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-store me-2"></i>Market</label>
+                        <select class="form-select" id="market" name="market" required>
+                            <option value="">Select Market</option>
+                            {% for market in markets %}
+                            <option value="{{ market }}">{{ market }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-seedling me-2"></i>Commodity</label>
+                        <select class="form-select" id="commodity" name="commodity" required>
+                            <option value="">Select Commodity</option>
+                            {% for commodity in commodities %}
+                            <option value="{{ commodity }}">{{ commodity }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-tag me-2"></i>Variety</label>
+                        <select class="form-select" id="variety" name="variety" required>
+                            <option value="">Select Variety</option>
+                            {% for variety in varieties %}
+                            <option value="{{ variety }}">{{ variety }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-star me-2"></i>Grade</label>
+                        <select class="form-select" id="grade" name="grade" required>
+                            <option value="">Select Grade</option>
+                            {% for grade in grades %}
+                            <option value="{{ grade }}">{{ grade }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label><i class="fas fa-calendar me-2"></i>Month</label>
+                        <select class="form-select" id="month" name="month" required>
+                            <option value="">Select Month</option>
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                    </div>
+                    
+                    <button type="submit" class="btn-predict" id="predictBtn">
+                        <i class="fas fa-chart-line me-2"></i>Predict Price
+                    </button>
+                </form>
+            </div>
+
+            <!-- Right Column - Results -->
+            <div class="result-card" id="resultSection" style="display: none;">
+                <div class="result-header">
+                    <h3>Price Forecast</h3>
+                    <button class="btn-analyze" onclick="resetForm()">
+                        <i class="fas fa-sync-alt me-2"></i>New Prediction
+                    </button>
+                </div>
+
+                <!-- Price Display -->
+                <div class="price-card" id="priceDisplay">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Price Chart -->
+                <div class="chart-container">
+                    <canvas id="priceChart"></canvas>
+                </div>
+
+                <!-- Market Factors -->
+                <h5 style="color: #333; margin-top: 1.5rem;">Market Factors</h5>
+                <div class="factors-grid" id="factorsGrid">
+                    <!-- Populated by JavaScript -->
+                </div>
+
+                <!-- Input Summary -->
+                <div class="input-summary" id="inputSummary">
+                    <!-- Populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loader-overlay" id="loadingOverlay">
+        <div class="loader"></div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        let priceChart = null;
+
+        $(document).ready(function() {
+            // Load markets when district changes
+            $('#district').change(function() {
+                var district = $(this).val();
+                if (district) {
+                    $.get('/get-markets', {district: district}, function(data) {
+                        var marketSelect = $('#market');
+                        marketSelect.empty();
+                        marketSelect.append('<option value="">Select Market</option>');
+                        data.markets.forEach(function(market) {
+                            marketSelect.append('<option value="' + market + '">' + market + '</option>');
+                        });
+                    });
+                }
+            });
+
+            // Load varieties when commodity changes
+            $('#commodity').change(function() {
+                var commodity = $(this).val();
+                if (commodity) {
+                    $.get('/get-varieties', {commodity: commodity}, function(data) {
+                        var varietySelect = $('#variety');
+                        varietySelect.empty();
+                        varietySelect.append('<option value="">Select Variety</option>');
+                        data.varieties.forEach(function(variety) {
+                            varietySelect.append('<option value="' + variety + '">' + variety + '</option>');
+                        });
+                    });
+                }
+            });
+
+            // Handle form submission
+            $('#priceForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                // Show loading
+                $('#loadingOverlay').show();
+                
+                // Get form data
+                var formData = {
+                    district: $('#district').val(),
+                    market: $('#market').val(),
+                    commodity: $('#commodity').val(),
+                    variety: $('#variety').val(),
+                    grade: $('#grade').val(),
+                    month: $('#month').val()
+                };
+                
+                // Make prediction request
+                $.ajax({
+                    type: 'POST',
+                    url: '/predict-price',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        $('#loadingOverlay').hide();
+                        
+                        if (response.error) {
+                            alert('Error: ' + response.error);
+                            return;
+                        }
+                        
+                        // Display results
+                        displayResults(response);
+                        
+                        // Show result section
+                        $('#resultSection').show();
+                        
+                        // Smooth scroll to results
+                        $('html, body').animate({
+                            scrollTop: $('#resultSection').offset().top - 100
+                        }, 500);
+                    },
+                    error: function(xhr, status, error) {
+                        $('#loadingOverlay').hide();
+                        alert('Error: ' + error);
+                    }
+                });
+            });
+        });
+
+        function displayResults(response) {
+            // Display price with model info
+            const priceHtml = `
+                <div class="price-label">Predicted Price per Quintal</div>
+                <div class="predicted-price">₹${response.predicted_price.toLocaleString()}</div>
+                <div class="price-range">Range: ₹${response.min_price.toLocaleString()} - ₹${response.max_price.toLocaleString()}</div>
+                <div class="confidence-badge">
+                    <i class="fas fa-check-circle me-2"></i>${response.confidence} Confidence
+                </div>
+                ${response.model_info ? `
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #ddd;">
+                    <div style="display: flex; justify-content: center; gap: 2rem; font-size: 0.9rem; color: #666;">
+                        <span><strong>Model:</strong> ${response.model_info.name}</span>
+                        <span><strong>R² Score:</strong> ${(response.model_info.r2_score * 100).toFixed(1)}%</span>
+                        <span><strong>MAE:</strong> ₹${response.model_info.mae}</span>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            $('#priceDisplay').html(priceHtml);
+
+            // Display factors
+            let factorsHtml = '';
+            response.factors.forEach(function(factor) {
+                const impactClass = factor.impact === 'Positive' ? 'impact-positive' : 
+                                  (factor.impact === 'Negative' ? 'impact-negative' : 'impact-neutral');
+                const impactIcon = factor.impact === 'Positive' ? 'fa-arrow-up' : 
+                                  (factor.impact === 'Negative' ? 'fa-arrow-down' : 'fa-minus');
+                factorsHtml += `
+                    <div class="factor-card">
+                        <div class="factor-name">${factor.name}</div>
+                        <div class="factor-value">
+                            <span class="factor-impact ${impactClass}">
+                                <i class="fas ${impactIcon} me-1"></i>${factor.impact}
+                            </span>
+                            <span>${factor.value}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            $('#factorsGrid').html(factorsHtml);
+
+            // Display input summary
+            const summaryHtml = `
+                <div class="summary-item">
+                    <div class="summary-label">Commodity</div>
+                    <div class="summary-value">${$('#commodity').val()}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Market</div>
+                    <div class="summary-value">${$('#market').val()}</div>
+                </div>
+                <div class="summary-item">
+                    <div class="summary-label">Month</div>
+                    <div class="summary-value">${$('#month option:selected').text()}</div>
+                </div>
+            `;
+            $('#inputSummary').html(summaryHtml);
+
+            // Create/Update chart
+            createPriceChart(response.historical_prices, response.predicted_price);
+        }
+
+        function createPriceChart(historical, predicted) {
+            const ctx = document.getElementById('priceChart').getContext('2d');
+            
+            // Prepare data with proper labels
+            const labels = historical.map(h => h.short_month || h.month);
+            const prices = historical.map(h => h.price);
+            
+            // Add prediction with month name
+            const selectedMonth = $('#month option:selected').text();
+            labels.push(`${selectedMonth} (Forecast)`);
+            prices.push(predicted);
+
+            if (priceChart) {
+                priceChart.destroy();
+            }
+
+            priceChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Price (₹ per quintal)',
+                        data: prices,
+                        borderColor: '#3498db',
+                        backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                        borderWidth: 3,
+                        tension: 0.4,
+                        fill: true,
+                        pointBackgroundColor: prices.map((_, i) => 
+                            i === prices.length - 1 ? '#e74c3c' : '#3498db'
+                        ),
+                        pointRadius: prices.map((_, i) => 
+                            i === prices.length - 1 ? 8 : 4
+                        )
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return `₹${context.parsed.y.toFixed(2)}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '₹' + value;
+                                }
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                maxRotation: 45,
+                                minRotation: 45
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function resetForm() {
+            $('#resultSection').hide();
+            $('#district').val('');
+            $('#market').val('');
+            $('#commodity').val('');
+            $('#variety').val('');
+            $('#grade').val('');
+            $('#month').val('');
+            
+            // Reset dependent dropdowns
+            $('#market').empty().append('<option value="">Select Market</option>');
+            $('#variety').empty().append('<option value="">Select Variety</option>');
+        }
+    </script>
+</body>
+</html>

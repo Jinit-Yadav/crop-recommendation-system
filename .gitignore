@@ -1,0 +1,43 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+agentic_env/
+venv/
+ENV/
+
+# Model files (too large for GitHub!)
+*.pkl
+*.joblib
+*.h5
+*.pt
+*.pth
+
+# Data files
+*.csv
+*.xlsx
+*.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+*.tmp
+
+# API keys
+production_keys.json
+.env
+*.key
+
+# Large files
+*.zip
+*.tar
+*.gz

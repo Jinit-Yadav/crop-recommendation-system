@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Crop Recommendation API Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .api-info {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .api-info h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .api-info code {
+            background: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .input-group {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .input-group h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .form-field {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-field label {
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .form-field input, .form-field select {
+            padding: 10px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .form-field input:focus, .form-field select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeIn 0.5s ease;
+        }
+
+        .result-card h3 {
+            color: #667eea;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #e0e0e0;
+            padding-bottom: 10px;
+        }
+
+        .result-card pre {
+            background: #f4f4f4;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+            font-family: 'Courier New', monospace;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .metric-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin: 5px;
+        }
+
+        .risk-high { background: #fee; color: #c00; }
+        .risk-medium { background: #fef3c7; color: #d97706; }
+        .risk-low { background: #d1fae5; color: #059669; }
+
+        .profit-high { background: #d1fae5; color: #059669; }
+        .profit-medium { background: #fef3c7; color: #d97706; }
+        .profit-low { background: #fee; color: #c00; }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            margin-left: 10px;
+        }
+
+        .status-online {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .status-offline {
+            background: #fee;
+            color: #c00;
+        }
+
+        .quick-test {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .quick-test button {
+            background: #6c757d;
+            font-size: 14px;
+            padding: 8px 20px;
+            margin: 5px;
+        }
+
+        @media (max-width: 768px) {
+            .results {
+                grid-template-columns: 1fr;
+            }
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🌾 Enhanced Crop Recommendation API</h1>
+        
+        <div class="api-info">
+            <h3>🔧 API Configuration</h3>
+            <p><strong>Base URL:</strong> <code id="api-url-display">http://localhost:5000</code></p>
+            <p><strong>API Key:</strong> <code>agri_8BzZERoE4ozpReGohEnS2t1JCFy98m52dgtGamXKF_g</code></p>
+            <p><strong>Status:</strong> <span id="api-status" class="status-badge status-offline">Checking...</span></p>
+        </div>
+
+        <div class="input-group">
+            <h3>📊 Farm Conditions Input</h3>
+            <div class="form-row">
+                <div class="form-field">
+                    <label>🌡️ Temperature (°C)</label>
+                    <input type="number" id="temperature" step="0.1" value="28" placeholder="e.g., 28">
+                </div>
+                <div class="form-field">
+                    <label>💧 Rainfall Category</label>
+                    <select id="rainfall_category">
+                        <option value="Low">Low (&lt; 100mm)</option>
+                        <option value="Medium" selected>Medium (100-200mm)</option>
+                        <option value="High">High (&gt; 200mm)</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>🌱 Soil Type</label>
+                    <select id="soil_type">
+                        <option value="Low Fertility">Low Fertility</option>
+                        <option value="Medium Fertility" selected>Medium Fertility</option>
+                        <option value="High Fertility">High Fertility</option>
+                    </select>
+                </div>
+            </div>
+            <button onclick="getCropRecommendation()">🚀 Get Enhanced Recommendation</button>
+            <button onclick="testConnection()">🔌 Test Connection</button>
+            
+            <div class="quick-test">
+                <strong>Quick Test Scenarios:</strong>
+                <button onclick="setScenario('rice')">🌾 Rice (Wet, Warm)</button>
+                <button onclick="setScenario('wheat')">🌾 Wheat (Cool, Moderate)</button>
+                <button onclick="setScenario('dry')">🏜️ Dry Region</button>
+                <button onclick="setScenario('rich_soil')">✨ Rich Soil</button>
+            </div>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 15px;">Analyzing farm conditions with AI...</p>
+        </div>
+
+        <div class="results" id="results" style="display: none;">
+            <div class="result-card">
+                <h3>🎯 Primary Recommendation</h3>
+                <div id="primary-result"></div>
+            </div>
+            <div class="result-card">
+                <h3>🔄 Alternative Crops</h3>
+                <div id="alternatives-result"></div>
+            </div>
+        </div>
+
+        <div class="result-card" id="raw-response" style="display: none;">
+            <h3>📝 Raw API Response</h3>
+            <pre id="raw-json"></pre>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        const API_KEY = 'agri_8BzZERoE4ozpReGohEnS2t1JCFy98m52dgtGamXKF_g';
+
+        // Test API connection on load
+        window.addEventListener('load', () => {
+            testConnection();
+        });
+
+        async function testConnection() {
+            try {
+                const response = await fetch(`${API_URL}/api/v1/test`, {
+                    headers: { 'X-API-Key': API_KEY }
+                });
+                const data = await response.json();
+                
+                const statusEl = document.getElementById('api-status');
+                statusEl.textContent = 'Online';
+                statusEl.className = 'status-badge status-online';
+                
+                // Show success message
+                console.log('API Test:', data);
+                return true;
+            } catch (error) {
+                const statusEl = document.getElementById('api-status');
+                statusEl.textContent = 'Offline';
+                statusEl.className = 'status-badge status-offline';
+                console.error('Connection error:', error);
+                alert('Cannot connect to API. Make sure the Flask server is running on port 5000');
+                return false;
+            }
+        }
+
+        async function getCropRecommendation() {
+            const temperature = document.getElementById('temperature').value;
+            const soil_type = document.getElementById('soil_type').value;
+            const rainfall_category = document.getElementById('rainfall_category').value;
+
+            // Validate input
+            if (!temperature || temperature < 0 || temperature > 50) {
+                alert('Please enter a valid temperature between 0-50°C');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('raw-response').style.display = 'none';
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('temperature', temperature);
+                formData.append('soil_type', soil_type);
+                formData.append('rainfall_category', rainfall_category);
+
+                const response = await fetch(`${API_URL}/api/v1/predict-crop`, {
+                    method: 'POST',
+                    headers: {
+                        'X-API-Key': API_KEY,
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: formData
+                });
+
+                const data = await response.json();
+                
+                // Hide loading
+                document.getElementById('loading').style.display = 'none';
+                
+                if (data.success) {
+                    displayResults(data);
+                    // Show raw response for debugging
+                    document.getElementById('raw-json').textContent = JSON.stringify(data, null, 2);
+                    document.getElementById('raw-response').style.display = 'block';
+                } else {
+                    alert('Error: ' + (data.error || 'Unknown error'));
+                }
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                alert('Error: ' + error.message + '\nMake sure the Flask server is running');
+                console.error('Request error:', error);
+            }
+        }
+
+        function displayResults(data) {
+            // Get risk level class
+            const riskClass = data.risk_level === 'High' ? 'risk-high' : 
+                             (data.risk_level === 'Medium' ? 'risk-medium' : 'risk-low');
+            
+            const profitClass = data.profitability === 'High' ? 'profit-high' :
+                               (data.profitability === 'Medium' ? 'profit-medium' : 'profit-low');
+
+            // Primary recommendation HTML
+            const primaryHtml = `
+                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                            border-radius: 12px; padding: 20px; color: white; margin-bottom: 20px;">
+                    <h2 style="margin: 0; font-size: 2rem;">${data.best_crop}</h2>
+                    <p style="opacity: 0.9; margin-top: 5px;">Match Confidence: ${data.best_confidence_percentage}</p>
+                </div>
+                
+                <div style="display: grid; gap: 15px;">
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>🌾 Suitability Score:</strong>
+                        <span style="font-weight: 700; color: #667eea;">${data.suitability_percentage}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>📊 Expected Yield:</strong>
+                        <span style="font-weight: 700; color: #28a745;">${data.expected_yield} ${data.expected_yield_unit}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>💰 Expected Profit:</strong>
+                        <span style="font-weight: 700; color: #ffc107;">${data.profit_estimate_formatted} ${data.profit_estimate_unit}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>📈 Profitability:</strong>
+                        <span class="metric-badge ${profitClass}">${data.profitability}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>⚠️ Risk Level:</strong>
+                        <span class="metric-badge ${riskClass}">${data.risk_level} (Score: ${data.risk_score}%)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>🏪 Market Demand:</strong>
+                        <span style="font-weight: 700;">${data.market_demand}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 10px; background: #f8f9fa; border-radius: 8px;">
+                        <strong>📅 Growing Days:</strong>
+                        <span>${data.growing_days} days</span>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 20px; padding: 15px; background: ${data.suitability_score >= 75 ? '#d1fae5' : '#fed7aa'}; 
+                            border-radius: 10px; border-left: 4px solid ${data.suitability_score >= 75 ? '#10b981' : '#f59e0b'};">
+                    <strong>💡 ${data.suitability_score >= 75 ? 'Excellent' : 'Good'} Suitability Reason:</strong>
+                    <p style="margin-top: 8px; font-size: 14px;">${data.suitability_reason}</p>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <strong>🌱 Soil Requirements:</strong>
+                    <p style="margin-top: 8px; font-size: 14px; color: #666;">${data.soil_requirement}</p>
+                </div>
+                
+                <div style="margin-top: 20px;">
+                    <strong>✅ Why ${data.best_crop} is Recommended:</strong>
+                    <ul style="margin-top: 10px; list-style: none; padding-left: 0;">
+                        ${data.reasons.map(reason => `<li style="margin-bottom: 8px; padding-left: 20px; position: relative;">
+                            <span style="position: absolute; left: 0; color: #28a745;">✓</span> ${reason}
+                        </li>`).join('')}
+                    </ul>
+                </div>
+            `;
+
+            // Alternatives HTML
+            let alternativesHtml = '';
+            data.recommendations.forEach((rec, index) => {
+                const suitabilityColor = rec.suitability >= 75 ? '#10b981' : (rec.suitability >= 60 ? '#f59e0b' : '#ef4444');
+                alternativesHtml += `
+                    <div style="border: 1px solid #e0e0e0; border-radius: 10px; padding: 15px; margin-bottom: 15px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <strong style="font-size: 1.1rem;">${index + 1}. ${rec.crop}</strong>
+                            <span class="metric-badge" style="background: ${suitabilityColor}20; color: ${suitabilityColor};">
+                                Match: ${rec.confidence_percentage}
+                            </span>
+                        </div>
+                        <div style="margin-bottom: 8px;">
+                            <div style="background: #e0e0e0; border-radius: 10px; height: 8px; overflow: hidden;">
+                                <div style="background: linear-gradient(90deg, #667eea, #764ba2); width: ${rec.confidence * 100}%; height: 100%;"></div>
+                            </div>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; font-size: 13px;">
+                            <span>🌾 Suitability: ${rec.suitability_percentage}</span>
+                            <span style="color: ${suitabilityColor};">${rec.suitability >= 75 ? 'Highly Suitable' : (rec.suitability >= 60 ? 'Moderately Suitable' : 'Marginally Suitable')}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (data.recommendations.length === 0) {
+                alternativesHtml = '<p style="color: #666;">No alternative recommendations available</p>';
+            }
+
+            document.getElementById('primary-result').innerHTML = primaryHtml;
+            document.getElementById('alternatives-result').innerHTML = alternativesHtml;
+            document.getElementById('results').style.display = 'grid';
+        }
+
+        // Quick test scenarios
+        function setScenario(type) {
+            switch(type) {
+                case 'rice':
+                    document.getElementById('temperature').value = 28;
+                    document.getElementById('rainfall_category').value = 'High';
+                    document.getElementById('soil_type').value = 'High Fertility';
+                    break;
+                case 'wheat':
+                    document.getElementById('temperature').value = 18;
+                    document.getElementById('rainfall_category').value = 'Medium';
+                    document.getElementById('soil_type').value = 'Medium Fertility';
+                    break;
+                case 'dry':
+                    document.getElementById('temperature').value = 35;
+                    document.getElementById('rainfall_category').value = 'Low';
+                    document.getElementById('soil_type').value = 'Low Fertility';
+                    break;
+                case 'rich_soil':
+                    document.getElementById('temperature').value = 25;
+                    document.getElementById('rainfall_category').value = 'Medium';
+                    document.getElementById('soil_type').value = 'High Fertility';
+                    break;
+            }
+            getCropRecommendation();
+        }
+    </script>
+</body>
+</html>
