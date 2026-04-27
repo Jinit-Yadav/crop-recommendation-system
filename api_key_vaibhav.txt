@@ -1,18 +1,18 @@
 API Key for Vaibhav
-Generated: 2026-04-27 03:52:33
+Generated: 2026-04-27 19:30:00
 Expires: 2027-04-27
 
 API Key: agri_ipam8n8l9r_s-2GA9_e4EL9Gb_nkrgCgwVBQ09Ktug8
 
 ENDPOINTS:
-- Crop: POST http://192.168.0.172:5000/api/v1/predict
-- Price: POST http://192.168.0.172:5000/api/v1/price-advisor
-- Test: GET http://192.168.0.172:5000/api/v1/test
+- Crop: POST https://crop-api-tljn.onrender.com/api/v1/predict
+- Price: POST https://crop-api-tljn.onrender.com/api/v1/price-advisor
+- Test: GET https://crop-api-tljn.onrender.com/api/v1/test
 
 Node.js Example:
 ```javascript
 const API_KEY = 'agri_ipam8n8l9r_s-2GA9_e4EL9Gb_nkrgCgwVBQ09Ktug8';
-const BASE_URL = 'http://192.168.0.172:5000';
+const BASE_URL = 'https://crop-api-tljn.onrender.com';
 
 const response = await axios.post(`${BASE_URL}/api/v1/predict`, {
     temperature: 28,
@@ -20,4 +20,3 @@ const response = await axios.post(`${BASE_URL}/api/v1/predict`, {
     soil_fertility: 'High Fertility',
     ph: 6.2
 }, { headers: { 'X-API-Key': API_KEY } });
-```
