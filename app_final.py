@@ -778,6 +778,73 @@ def price_advisor_api():
         traceback.print_exc()
         return jsonify({'error': str(e)}), 500
 
+@app.route('/api/v1/predict-crop-enhanced', methods=['POST'])
+@require_api_key
+def predict_enhanced():
+    """Alias for predict endpoint for backward compatibility"""
+    return predict()
+
+@app.route('/api/v1/compare-crops', methods=['POST'])
+@require_api_key
+def compare_crops():
+    """Compare multiple crops"""
+    try:
+        data = request.json
+        crops = data.get('crops', [])
+        conditions = data.get('conditions', {})
+        
+        # Use existing prediction for each crop
+        comparisons = []
+        for crop in crops:
+            # Get prediction data
+            predictions = get_top_predictions(conditions, top_n=len(label_encoder.classes_))
+            crop_data = next((p for p in predictions if p['crop'].lower() == crop.lower()), None)
+            
+            if crop_data:
+                comparisons.append({
+                    'crop': crop,
+                    'suitability': crop_data.get('suitability_percentage', 0),
+                    'expected_yield_tons': crop_data.get('expected_yield_tons_per_acre', 0),
+                    'profit_margin': crop_data.get('profit_margin', 0),
+                    'risk_level': crop_data.get('risk_level', 'Medium')
+                })
+        
+        # Sort by suitability
+        comparisons.sort(key=lambda x: x['suitability'], reverse=True)
+        
+        return jsonify({
+            'success': True,
+            'comparison': comparisons,
+            'best_crop': comparisons[0]['crop'] if comparisons else None
+        })
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+@app.route('/api/v1/crop-details/<crop_name>', methods=['GET'])
+@require_api_key
+def crop_details(crop_name):
+    """Get detailed information about a specific crop"""
+    try:
+        crop_lower = crop_name.lower()
+        
+        if crop_lower in CROP_DETAILS:
+            details = CROP_DETAILS[crop_lower]
+            return jsonify({
+                'crop': crop_name,
+                'details': details,
+                'success': True
+            })
+        else:
+            return jsonify({
+                'error': f'Crop {crop_name} not found',
+                'available_crops': list(CROP_DETAILS.keys())
+            }), 404
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 if __name__ == '__main__':
     print("\n" + "="*60)
     print("🚀 COMPLETE CROP RECOMMENDATION API")
